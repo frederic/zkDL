@@ -1,0 +1,19 @@
+{
+  "name": "zkdl-github",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test_ec.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@noble/curves": "^1.3.0",
+    "jose": "^5.2.1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.11.16",
+    "typescript": "^5.3.3"
+  }
+}
