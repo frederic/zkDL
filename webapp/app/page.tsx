@@ -1,7 +1,8 @@
+import VerifymDL from "@/components/VerifymDL";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 export default function Home() {
-  return (
+  return (<div>
     <div
       style={{
         display: 'flex',
@@ -10,6 +11,8 @@ export default function Home() {
       }}
     >
       <ConnectButton />
+    </div>
+    <VerifymDL />
     </div>
   );
 }
