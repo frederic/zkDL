@@ -1,7 +1,9 @@
 use dep::std;
+use dep::sha2::sha256;
 
-fn main(pub_key_x: [u8; 32], pub_key_y: [u8; 32], signature: [u8; 64], hashed_message: [u8; 32]) {
-    let x = std::ecdsa_secp256r1::verify_signature(pub_key_x, pub_key_y, signature, hashed_message);
+fn main(pub_key_x: [u8; 32], pub_key_y: [u8; 32], signature: [u8; 64], msg: [u8; 2560], msg_len: u16) {
+    let msg_hash = sha256(msg, msg_len);
+    let x = std::ecdsa_secp256r1::verify_signature(pub_key_x, pub_key_y, signature, msg_hash);
     assert(x == true);
 }
 
