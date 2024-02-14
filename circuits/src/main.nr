@@ -1,10 +1,47 @@
 use dep::std;
 use dep::sha2::sha256;
 
-fn main(pub_key_x: [u8; 32], pub_key_y: [u8; 32], signature: [u8; 64], msg: [u8; 2560], msg_len: u16) {
-    let msg_hash = sha256(msg, msg_len);
+fn main(
+    pub_key_x: [u8; 32],
+    pub_key_y: [u8; 32],
+    signature: [u8; 64],
+    mso: [u8; 2560],
+    mso_len: u16,
+    digestId: [u8; 4],
+    random: [u8; 16],
+    docNum: [u8; 8],
+    docNumOffset: u16
+) -> pub [u8; 32] {
+    assert(docNumOffset + 4 + 2 + 32 < mso_len);
+    let mut docNumItem: [u8; 99] = [
+        0xD8, 0x18, 0x58, 0x5F, 0xA4, 0x68, 0x64, 0x69, 0x67, 0x65, 0x73, 0x74, 0x49, 0x44, 0x1A, 0x0, 0x0, 0x0, 0x0, 0x66, 0x72, 0x61, 0x6E, 0x64, 0x6F, 0x6D, 0x50, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x71, 0x65, 0x6C, 0x65, 0x6D, 0x65, 0x6E, 0x74, 0x49, 0x64, 0x65, 0x6E, 0x74, 0x69, 0x66, 0x69, 0x65, 0x72, 0x6F, 0x64, 0x6F, 0x63, 0x75, 0x6D, 0x65, 0x6E, 0x74, 0x5F, 0x6E, 0x75, 0x6D, 0x62, 0x65, 0x72, 0x6C, 0x65, 0x6C, 0x65, 0x6D, 0x65, 0x6E, 0x74, 0x56, 0x61, 0x6C, 0x75, 0x65, 0x68, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
+    ];
+
+    for i in 0..digestId.len() {
+        docNumItem[15 + i] = digestId[i];
+    }
+    for i in 0..random.len() {
+        docNumItem[27 + i] = random[i];
+    }
+    for i in 0..docNum.len() {
+        docNumItem[91 + i] = docNum[i];
+    }
+    let hash = std::hash::sha256(docNumItem);
+
+    let fDocNumOffset = docNumOffset as Field;
+    for i in 0..digestId.len() {
+        assert(digestId[i] == mso[fDocNumOffset + i]);
+    }
+    assert(mso[fDocNumOffset + digestId.len()] == 0x58);
+    assert(mso[fDocNumOffset + digestId.len() + 1] == 0x20); //hash size: 32 bytes
+    for i in 0..hash.len() {
+        assert(hash[i] == mso[fDocNumOffset + digestId.len() + 2 + i]);
+    }
+
+    let msg_hash = sha256(mso, mso_len);
     let x = std::ecdsa_secp256r1::verify_signature(pub_key_x, pub_key_y, signature, msg_hash);
     assert(x == true);
+    std::hash::sha256(docNum)
 }
 
 //from https://github.com/noir-lang/noir/blob/7e139de3499478cf573d2a7ad480f434cb898d9f/test_programs/execution_success/ecdsa_secp256r1/Prover.toml
