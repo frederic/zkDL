@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Simple Verifier</string>
-    <string name="nfc">Tap to Present Via NFC</string>
+    <string name="app_name">zkDL Reader</string>
+    <string name="bluetooth">Please enable Bluetooth</string>
 </resources>

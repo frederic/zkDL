@@ -168,14 +168,6 @@ private fun ToolboxScreen(
             onScanQrClicked = {
                 enableReaderPermissions()
                 val mdocReaderPrompt = MdocReaderPrompt(MdocReaderSettings.Builder()
-                    .setAgeVerificationType(AgeVerificationType.Over21)
-                    .build())
-                mdocReaderPrompt.show(supportFragmentManager, null)
-            },
-            onOver18BtnClicked = {
-                enableReaderPermissions()
-                val mdocReaderPrompt = MdocReaderPrompt(MdocReaderSettings.Builder()
-                    .setAgeVerificationType(AgeVerificationType.Over18)
                     .build())
                 mdocReaderPrompt.show(supportFragmentManager, null)
             },
@@ -191,7 +183,6 @@ private fun ToolboxScreen(
 @Composable
 private fun Toolbox(
     onScanQrClicked: () -> Unit,
-    onOver18BtnClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -214,14 +205,6 @@ private fun Toolbox(
         ) {
             Text("Scan QR code")
         }
-        FilledTonalButton(
-            modifier = Modifier
-                .padding(horizontal = 10.dp)
-                .fillMaxWidth(),
-            onClick = onOver18BtnClicked
-        ) {
-            Text("Over 18?")
-        }
     }
 }
 
@@ -238,6 +221,6 @@ private fun VerifierAppPreview() {
 @Composable
 private fun ToolboxPreview() {
     IdentityCredentialTheme {
-        Toolbox(onScanQrClicked = {}, onOver18BtnClicked = {})
+        Toolbox(onScanQrClicked = {})
     }
 }

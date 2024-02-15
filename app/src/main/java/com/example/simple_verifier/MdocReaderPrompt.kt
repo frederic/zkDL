@@ -45,7 +45,7 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Nfc
+import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -97,7 +97,6 @@ class MdocReaderPrompt(
     private lateinit var readerModeListener: NfcAdapter.ReaderCallback
 
     private var hasStarted = false
-    private lateinit var ageRequested: AgeVerificationType
     private lateinit var vibrator: Vibrator
     var readerEngagement: ByteArray? = null
     var responseBytes: ByteArray? = null
@@ -118,11 +117,7 @@ class MdocReaderPrompt(
 
     private fun sendRequest() {
         val requestedElemsIntent: MutableMap<String, Boolean> = mutableMapOf()
-        requestedElemsIntent["portrait"] = false
-        when (ageRequested) {
-            AgeVerificationType.Over18 -> requestedElemsIntent["age_over_18"] = false
-            AgeVerificationType.Over21 -> requestedElemsIntent["age_over_21"] = false
-        }
+        requestedElemsIntent["document_number"] = false
 
         val generator = DeviceRequestGenerator()
             .setSessionTranscript(verification.sessionTranscript)
@@ -240,7 +235,6 @@ class MdocReaderPrompt(
         bottomSheetDialog.behavior.skipCollapsed = true
 
         initializeWithContext()
-        ageRequested = mdocReaderSettings.getAgeRequested()
         val adapter = NfcAdapter.getDefaultAdapter(context)
         adapter.enableReaderMode(
             activity, readerModeListener,
@@ -255,9 +249,18 @@ class MdocReaderPrompt(
 
                     NavHost(
                         navController = navController,
-                        startDestination = "ReaderReady",
+                        startDestination = "InitQrScanner",
                         modifier = Modifier.fillMaxSize()
                     ) {
+                        composable(route = "InitQrScanner") {
+                            QrScanner(
+                                onClose = { dismiss() },
+                                qrCodeReturn = {qrText -> onInitQrScanned(qrText) },
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.background)
+                                    .fillMaxSize()
+                            )
+                        }
                         composable(route = "ReaderReady") {
                             ReaderScreen(
                                 onClose = { dismiss() },
@@ -502,22 +505,17 @@ private fun ReaderScreen(
                     .padding(vertical = 15.dp)
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center,
-                text = "Requesting",
+                text = "Requesting mDL ID",
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
             Text(
                 textAlign = TextAlign.Center,
-                text = "\t\u2022\t\t" + "Portrait",
+                text = "Source: " + mdocReaderSettings.getRequestCallback(),
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.padding(horizontal = 25.dp, vertical = 5.dp)
             )
-            Text(
-                textAlign = TextAlign.Center,
-                text = "\t\u2022\t\t" + mdocReaderSettings.getAgeDisplayString(),
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier.padding(horizontal = 25.dp, vertical = 5.dp)
-            )
+
         }
 
         // center dialog
@@ -551,8 +549,8 @@ private fun ReaderScreen(
                     ) {
                         Icon(
                             modifier = Modifier.requiredSize(70.dp),
-                            imageVector = Icons.Filled.Nfc,
-                            contentDescription = stringResource(R.string.nfc),
+                            imageVector = Icons.Filled.Bluetooth,
+                            contentDescription = stringResource(R.string.bluetooth),
                             tint = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
@@ -561,7 +559,7 @@ private fun ReaderScreen(
             if (!connecting) {
                 Text(
                     textAlign = TextAlign.Center,
-                    text = "Tap here to\n Present",
+                    text = stringResource(R.string.bluetooth),
                     overflow = TextOverflow.Visible,
                     modifier = Modifier.padding(horizontal = 4.dp),
                     color = MaterialTheme.colorScheme.onTertiaryContainer
@@ -622,48 +620,14 @@ private fun ResultsScreen(
             val documents: MutableList<DeviceResponseParser.Document>? = deviceResponse?.documents
             val mdoc: DeviceResponseParser.Document? = documents?.get(0)
             if (mdoc != null && "org.iso.18013.5.1" in mdoc.issuerNamespaces) {
-                val portraitBytes = mdoc.getIssuerEntryByteString("org.iso.18013.5.1", "portrait") // could break - need to fail more gracefully
-                val portraitColor: Color
                 val namespaces: List<String> = mdoc.getIssuerEntryNames("org.iso.18013.5.1")
-                var ageError = true
-                var resultDescription = "Person did not confirm age"
+                var resultDescription = "Couldn't retrieve document number!"
 
-                if (namespaces.contains("age_over_21")) {
-                    if (mdoc.getIssuerEntryBoolean("org.iso.18013.5.1", "age_over_21")) {
-                        ageError = false
-                        resultDescription = "Person is over 21"
-                    } else {
-                        resultDescription = "Person is NOT over 21"
-                    }
-                } else if (namespaces.contains("age_over_18")) {
-                    if (mdoc.getIssuerEntryBoolean("org.iso.18013.5.1", "age_over_18")) {
-                        ageError = false
-                        resultDescription = "Person is over 18"
-                    } else {
-                        resultDescription = "Person is NOT over 18"
-                    }
+                if (namespaces.contains("document_number")) {
+                    resultDescription = mdoc.getIssuerEntryString("org.iso.18013.5.1", "document_number")
+                } else if (!mdoc.issuerSignedAuthenticated or !mdoc.deviceSignedAuthenticated) {
+                    resultDescription = "Couldn't authenticate response!"
                 }
-
-                if (ageError) {
-                    portraitColor = Color.Red
-                }
-                else if (!mdoc.issuerSignedAuthenticated or !mdoc.deviceSignedAuthenticated) {
-                    portraitColor = Color.Red
-                    resultDescription = "Person could not prove age"
-                }
-                else {
-                    portraitColor = Color.Green
-                }
-
-                Image(modifier = Modifier
-                    .size(200.dp)
-                    .padding(horizontal = 20.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .background(portraitColor),
-                    bitmap = BitmapFactory.decodeByteArray(portraitBytes, 0, portraitBytes.size).asImageBitmap(),
-                    contentScale = ContentScale.None,
-                    contentDescription = "Portrait image + $resultDescription"
-                )
 
                 Text(
                     textAlign = TextAlign.Center,
@@ -702,7 +666,6 @@ private fun ReaderScreenPreview() {
         ReaderScreen(
             modifier = Modifier.fillMaxSize(),
             mdocReaderSettings = MdocReaderSettings.Builder()
-                .setAgeVerificationType(AgeVerificationType.Over21)
                 .build(),
             onClose = {},
             onQrClicked = {})

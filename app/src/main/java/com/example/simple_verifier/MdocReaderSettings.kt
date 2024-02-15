@@ -16,44 +16,25 @@
 
 package com.example.simple_verifier
 
-class MdocReaderSettings private constructor(
-    private val mRequestedAge: AgeVerificationType,
-) {
+import com.android.identity.util.Logger
 
-    internal fun getAgeDisplayString(): String {
-        return when (mRequestedAge) {
-            AgeVerificationType.Over18 -> "Age over 18"
-            AgeVerificationType.Over21 -> "Age over 21"
-        }
+class MdocReaderSettings private constructor(
+) {
+    private var mRequestCallback: String = ""
+
+    internal fun getRequestCallback(): String {
+        return this.mRequestCallback
     }
 
-    internal fun getAgeRequested(): AgeVerificationType {
-        return mRequestedAge
+    fun setQrRequest(qrText: String) {
+        this.mRequestCallback = qrText
+        Logger.d("zkDL", qrText)
     }
 
     class Builder {
 
-        private var mRequestedAge: AgeVerificationType = AgeVerificationType.Over18
-
-        /**
-         * Sets the requested age for age verification. If not set, the default is age verification
-         * over 18.
-         *
-         * @param requestedAge either [AgeVerificationType.Over18] or [AgeVerificationType.Over21]
-         * @return the modified builder
-         */
-        fun setAgeVerificationType(requestedAge: AgeVerificationType): Builder {
-            mRequestedAge = requestedAge
-            return this
-        }
-
         fun build(): MdocReaderSettings {
-            return MdocReaderSettings(mRequestedAge)
+            return MdocReaderSettings()
         }
     }
-}
-
-enum class AgeVerificationType() {
-    Over18,
-    Over21
 }
