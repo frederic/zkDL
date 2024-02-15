@@ -144,6 +144,7 @@ class MdocReaderPrompt(
         responseListener = object : VerificationHelper.Listener {
             override fun onReaderEngagementReady(readerEngagement: ByteArray) {
                 this@MdocReaderPrompt.readerEngagement = readerEngagement
+                Logger.d("zkDL", "onReaderEngagementReady")
             }
 
             override fun onDeviceEngagementReceived(connectionMethods: MutableList<ConnectionMethod>) {
@@ -219,6 +220,13 @@ class MdocReaderPrompt(
             parser.setDeviceResponse(rb)
             return parser.parse()
         } ?: throw IllegalStateException("Response not received")
+    }
+
+    private fun onInitQrScanned(qrText: String) {
+        mdocReaderSettings.setQrRequest(qrText)
+        activity?.runOnUiThread {
+            navController.navigate("ReaderReady")
+        }
     }
 
     override fun onCreateView(

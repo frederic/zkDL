@@ -26,13 +26,3 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = 'zkDL-app'
-
-// Libraries
-include ':identity', ':identity-mdoc', ':identity-android', ':mrtd-reader', ':jpeg2k'
-// Android apps
-include ':appholder', ':appverifier', ':secure-area-test-app', ':wwwverifier', ':wallet'
-// Server-side apps
-include ':wwwverifier'
-// Samples
-include ':samples:preconsent-mdl', ':samples:age-verifier-mdl', ':samples:simple-verifier'
-

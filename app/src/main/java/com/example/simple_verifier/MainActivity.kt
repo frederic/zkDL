@@ -155,7 +155,7 @@ private fun ToolboxScreen(
                 title = {
                     Text(
                         style = MaterialTheme.typography.headlineMedium,
-                        text = "mDL Age Check Example",
+                        text = "zkDL",
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -165,7 +165,7 @@ private fun ToolboxScreen(
     ) { innerPadding ->
 
         Toolbox(
-            onOver21BtnClicked = {
+            onScanQrClicked = {
                 enableReaderPermissions()
                 val mdocReaderPrompt = MdocReaderPrompt(MdocReaderSettings.Builder()
                     .setAgeVerificationType(AgeVerificationType.Over21)
@@ -190,7 +190,7 @@ private fun ToolboxScreen(
 
 @Composable
 private fun Toolbox(
-    onOver21BtnClicked: () -> Unit,
+    onScanQrClicked: () -> Unit,
     onOver18BtnClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -210,9 +210,9 @@ private fun Toolbox(
             modifier = Modifier
                 .padding(horizontal = 10.dp)
                 .fillMaxWidth(),
-            onClick = onOver21BtnClicked
+            onClick = onScanQrClicked
         ) {
-            Text("Over 21?")
+            Text("Scan QR code")
         }
         FilledTonalButton(
             modifier = Modifier
@@ -238,6 +238,6 @@ private fun VerifierAppPreview() {
 @Composable
 private fun ToolboxPreview() {
     IdentityCredentialTheme {
-        Toolbox(onOver21BtnClicked = {}, onOver18BtnClicked = {})
+        Toolbox(onScanQrClicked = {}, onOver18BtnClicked = {})
     }
 }
