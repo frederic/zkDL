@@ -1,1 +1,12 @@
-/build
+*.iml
+.gradle
+/local.properties
+.DS_Store
+*/build/
+/captures
+.externalNativeBuild
+.idea/
+fastlane/report.xml
+/mdl-ref-server/mdl-server-db.sqlite3
+/version*
+wwwverifier/build/*
