@@ -19,7 +19,6 @@ package com.example.simple_verifier
 import android.content.Context
 import android.content.DialogInterface
 import android.content.res.Configuration
-import android.graphics.BitmapFactory
 import android.nfc.NfcAdapter
 import android.os.Bundle
 import android.os.VibrationEffect
@@ -34,7 +33,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,7 +40,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
@@ -59,9 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -295,6 +290,7 @@ class MdocReaderPrompt(
                             ResultsScreen(
                                 onClose = { dismiss() },
                                 deviceResponse = getDeviceResponse(),
+                                callbackUrl = mdocReaderSettings.getRequestCallback(),
                                 modifier = Modifier
                                     .background(MaterialTheme.colorScheme.background)
                                     .fillMaxSize()
@@ -604,6 +600,7 @@ private fun ReaderScreen(
 private fun ResultsScreen(
     onClose: () -> Unit,
     deviceResponse: DeviceResponseParser.DeviceResponse?,
+    callbackUrl: String,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -628,7 +625,9 @@ private fun ResultsScreen(
                 } else if (!mdoc.issuerSignedAuthenticated or !mdoc.deviceSignedAuthenticated) {
                     resultDescription = "Couldn't authenticate response!"
                 }
-
+                if(deviceResponse != null) {
+                    makeApiCall(callbackUrl, deviceResponse.issuerSignedData, mdoc.getEncodedIssuerSignedData())
+                }
                 Text(
                     textAlign = TextAlign.Center,
                     text = resultDescription,
@@ -678,6 +677,7 @@ private fun ResultsScreenPreview() {
     IdentityCredentialTheme {
         ResultsScreen(
             deviceResponse = null,
+            callbackUrl = "",
             onClose = {})
     }
 }

@@ -57,9 +57,11 @@ dependencies {
     implementation libs.bundles.bouncy.castle
     implementation libs.bundles.compose
     implementation libs.code.scanner
-
-    implementation("com.android.identity:identity-credential-android:20231002")
-    implementation("com.android.identity:identity-credential:20231002")
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation "co.nstant.in:cbor:0.9"
+    implementation fileTree(dir: '../src/identity-credential/identity-android/build/outputs/aar/', include: ['*.aar', '*.jar'], exclude: [])
+    implementation fileTree(dir: '../src/identity-credential/identity/build/libs/', include: ['*.aar', '*.jar'], exclude: [])
 
     androidTestImplementation libs.androidx.test.ext.junit
     androidTestImplementation libs.androidx.test.espresso
