@@ -27,7 +27,8 @@ contract ZkDL is ERC721, Ownable, EIP712, ERC721Votes {
         return "https://zk-dl.vercel.app";
     }
 
-    function safeMint(bytes calldata proof, bytes32 nullifierHash, address to) external {
+    function safeMint(bytes calldata proof, bytes32 nullifierHash) external {
+        //TODO prevent front-running attack
         bytes32[] memory publicInputs = new bytes32[](96);
         for (uint i = 0; i < 32; i++) {
             publicInputs[i] = bytes32(uint256(uint8(pub_key_x[i])));
@@ -35,14 +36,7 @@ contract ZkDL is ERC721, Ownable, EIP712, ERC721Votes {
             publicInputs[i + 64] = bytes32(uint256(uint8(nullifierHash[i])));
         }
         require(verifier.verify(proof, publicInputs), "Invalid proof");
-        address from = _ownerOf(uint256(nullifierHash));
-        if (from != address(0)) {
-            if (from != to) {
-                transferFrom(from, to, uint256(nullifierHash));
-            }
-        } else {
-            _safeMint(to, uint256(nullifierHash));
-        }
+        _safeMint(msg.sender, uint256(nullifierHash));
     }
 
     // The following functions are overrides required by Solidity.

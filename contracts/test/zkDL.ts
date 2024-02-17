@@ -2,126 +2,75 @@ import {
   time,
   loadFixture,
 } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe("Lock", function () {
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const PROOF = "0x";
+const NULLIFIER_HASH = "0x";
+
+describe("zkDL", function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
-  async function deployOneYearLockFixture() {
-    const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-    const ONE_GWEI = 1_000_000_000;
-
-    const lockedAmount = ONE_GWEI;
-    const unlockTime = (await time.latest()) + ONE_YEAR_IN_SECS;
-
+  async function deployzkDLFixture() {
     // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount] = await ethers.getSigners();
+    const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
 
-    const Lock = await ethers.getContractFactory("Lock");
-    const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+    const UltraVerifier = await ethers.getContractFactory("UltraVerifier", owner);
+    const ultraVerifierContract = await UltraVerifier.deploy();
+    await ultraVerifierContract.waitForDeployment();
 
-    return { lock, unlockTime, lockedAmount, owner, otherAccount };
+    const pub_key_x = "0xe1379d211875e990e901724fca169779c5e8c6807c3fa2d6e050e9a802d65922";
+    const pub_key_y = "0x0a7dc24b8d799ad55a85931b56fecea392cbe6e6969ef9f9758770b1408af5d6";
+
+    const zkDLFactory = await ethers.getContractFactory("ZkDL", owner);
+    const zkDl = await zkDLFactory.deploy(
+      await owner.getAddress(),
+      await ultraVerifierContract.getAddress(),
+      pub_key_x,
+      pub_key_y
+    );
+
+    return { zkDl, owner, otherAccount, thirdAccount };
   }
 
   describe("Deployment", function () {
-    it("Should set the right unlockTime", async function () {
-      const { lock, unlockTime } = await loadFixture(deployOneYearLockFixture);
-
-      expect(await lock.unlockTime()).to.equal(unlockTime);
-    });
-
     it("Should set the right owner", async function () {
-      const { lock, owner } = await loadFixture(deployOneYearLockFixture);
-
-      expect(await lock.owner()).to.equal(owner.address);
-    });
-
-    it("Should receive and store the funds to lock", async function () {
-      const { lock, lockedAmount } = await loadFixture(
-        deployOneYearLockFixture
-      );
-
-      expect(await ethers.provider.getBalance(lock.target)).to.equal(
-        lockedAmount
-      );
-    });
-
-    it("Should fail if the unlockTime is not in the future", async function () {
-      // We don't use the fixture here because we want a different deployment
-      const latestTime = await time.latest();
-      const Lock = await ethers.getContractFactory("Lock");
-      await expect(Lock.deploy(latestTime, { value: 1 })).to.be.revertedWith(
-        "Unlock time should be in the future"
-      );
+      const { zkDl, owner } = await loadFixture(deployzkDLFixture);
+      expect(await zkDl.owner()).to.equal(owner.address);
     });
   });
 
-  describe("Withdrawals", function () {
-    describe("Validations", function () {
-      it("Should revert with the right error if called too soon", async function () {
-        const { lock } = await loadFixture(deployOneYearLockFixture);
-
-        await expect(lock.withdraw()).to.be.revertedWith(
-          "You can't withdraw yet"
-        );
-      });
-
-      it("Should revert with the right error if called from another account", async function () {
-        const { lock, unlockTime, otherAccount } = await loadFixture(
-          deployOneYearLockFixture
-        );
-
-        // We can increase the time in Hardhat Network
-        await time.increaseTo(unlockTime);
-
-        // We use lock.connect() to send a transaction from another account
-        await expect(lock.connect(otherAccount).withdraw()).to.be.revertedWith(
-          "You aren't the owner"
-        );
-      });
-
-      it("Shouldn't fail if the unlockTime has arrived and the owner calls it", async function () {
-        const { lock, unlockTime } = await loadFixture(
-          deployOneYearLockFixture
-        );
-
-        // Transactions are sent using the first signer by default
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw()).not.to.be.reverted;
-      });
+  describe("Mint", function () {
+    it("Should verify the proof & mint", async function () {
+      const { zkDl, owner, otherAccount } = await loadFixture(deployzkDLFixture);
+      expect(await zkDl.balanceOf(otherAccount)).to.equal(0);
+      await expect(zkDl.connect(otherAccount).safeMint(PROOF, NULLIFIER_HASH))
+        .to.emit(zkDl, 'Transfer')
+        .withArgs(ZERO_ADDRESS, otherAccount.address, NULLIFIER_HASH);
+      expect(await zkDl.balanceOf(otherAccount.address)).to.equal(1);
+      expect(await zkDl.owner()).to.equal(owner.address);
+      expect(await zkDl.ownerOf(NULLIFIER_HASH)).to.equal(otherAccount.address);
     });
 
-    describe("Events", function () {
-      it("Should emit an event on withdrawals", async function () {
-        const { lock, unlockTime, lockedAmount } = await loadFixture(
-          deployOneYearLockFixture
-        );
+    it("Should verify the proof, mint & revert", async function () {
+      const { zkDl, owner, otherAccount, thirdAccount } = await loadFixture(deployzkDLFixture);
+      expect(await zkDl.balanceOf(otherAccount)).to.equal(0);
+      await expect(zkDl.connect(otherAccount).safeMint(PROOF, NULLIFIER_HASH))
+        .to.emit(zkDl, 'Transfer')
+        .withArgs(ZERO_ADDRESS, otherAccount.address, NULLIFIER_HASH);
+      expect(await zkDl.balanceOf(otherAccount.address)).to.equal(1);
+      expect(await zkDl.owner()).to.equal(owner.address);
+      expect(await zkDl.ownerOf(NULLIFIER_HASH)).to.equal(otherAccount.address);
 
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw())
-          .to.emit(lock, "Withdrawal")
-          .withArgs(lockedAmount, anyValue); // We accept any value as `when` arg
-      });
-    });
-
-    describe("Transfers", function () {
-      it("Should transfer the funds to the owner", async function () {
-        const { lock, unlockTime, lockedAmount, owner } = await loadFixture(
-          deployOneYearLockFixture
-        );
-
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw()).to.changeEtherBalances(
-          [owner, lock],
-          [lockedAmount, -lockedAmount]
-        );
-      });
+      expect(await zkDl.balanceOf(thirdAccount.address)).to.equal(0);
+      await expect(zkDl.connect(thirdAccount).safeMint(PROOF, NULLIFIER_HASH)).to.be.revertedWithCustomError(
+        zkDl,
+        "ERC721InvalidSender"
+      );
+      expect(await zkDl.balanceOf(thirdAccount.address)).to.equal(0);
+      expect(await zkDl.balanceOf(otherAccount.address)).to.equal(1);
     });
   });
 });
