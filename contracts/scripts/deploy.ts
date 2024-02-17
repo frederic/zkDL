@@ -1,21 +1,26 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const [owner] = await ethers.getSigners();
 
-  const lockedAmount = ethers.parseEther("0.001");
+  const ultraVerifierContract = await ethers.deployContract("UltraVerifier");
+  await ultraVerifierContract.waitForDeployment();
+  console.log(
+    `UltraVerifier deployed to ${ultraVerifierContract.target}`
+  );
 
-  const lock = await ethers.deployContract("ZkDL", [unlockTime], {
-    value: lockedAmount,
-  });
-
-  await lock.waitForDeployment();
+  const pub_key_x = "0xe1379d211875e990e901724fca169779c5e8c6807c3fa2d6e050e9a802d65922";
+  const pub_key_y = "0x0a7dc24b8d799ad55a85931b56fecea392cbe6e6969ef9f9758770b1408af5d6";
+  const zkDl = await ethers.deployContract("ZkDL", [
+    await owner.getAddress(),
+    await ultraVerifierContract.getAddress(),
+    pub_key_x,
+    pub_key_y]
+  );
+  await zkDl.waitForDeployment();
 
   console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
+    `zkDl deployed to ${zkDl.target}`
   );
 }
 
