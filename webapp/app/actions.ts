@@ -49,7 +49,7 @@ async function createProof(proofInput: string) {
         API_URL + `/circuit/${CIRCUIT_ID}/prove`,
         postData,
         { headers: headersForm, validateStatus: (status) => status === 201 },
-      );
+    );
     return proveResponse.data.proof_id;
 }
 
@@ -75,6 +75,31 @@ export async function refreshSessionToken(): Promise<string> {
     return session.token;
 }
 
-export async function getProofIdByToken(token: string) {
-    return await getProofId(token);
+export async function saveProofIdInSession(token: string) {
+    const proofId =  await getProofId(token);
+    if(proofId) {
+        const session = await getSession();
+        session.proof_id = proofId;
+        await session.save();
+        return true;
+    }
+    return false;
+}
+
+async function getProofDetails(proofId: string) {
+    if(!proofId) {
+        return null;
+    }
+    const url = API_URL + '/proof/' + proofId + '/detail';
+    console.log(url);
+    const response = await axios.get(url, {
+        headers: headersJson,
+        validateStatus: (status) => status === 200,
+    });
+    return response.data;
+}
+
+export async function getProofStatus(proofId: string) {
+    const details = await getProofDetails(proofId);
+    return details.status
 }

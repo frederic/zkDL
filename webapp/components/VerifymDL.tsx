@@ -1,5 +1,5 @@
 'use client'
-import { getProofIdByToken, getSessionToken, pollForStatus, refreshSessionToken, signOut } from "@/app/actions";
+import { getSessionToken, refreshSessionToken, saveProofIdInSession } from "@/app/actions";
 import { useQRCode } from "next-qrcode";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
@@ -26,7 +26,7 @@ export default function VerifymDL() {
     }
 
     async function nextHandler() {
-        const proofId = await getProofIdByToken(token);
+        const proofId = await saveProofIdInSession(token);
         if (proofId) {
             router.push("/prove");
         }
