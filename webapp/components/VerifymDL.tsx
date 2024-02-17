@@ -18,7 +18,7 @@ export default function VerifymDL() {
         fetchToken()
     }, [])
     const { SVG } = useQRCode();
-    const url = `http://${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/api/callback/${token}`;
+    const url = `http://${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/api/callback/${token}/`;
 
     async function refreshToken() {
         const newToken = await refreshSessionToken();
