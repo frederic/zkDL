@@ -2,8 +2,8 @@ use dep::std;
 use dep::sha2::sha256;
 
 fn main(
-    pub_key_x: [u8; 32],
-    pub_key_y: [u8; 32],
+    pub_key_x: pub [u8; 32],
+    pub_key_y: pub [u8; 32],
     signature: [u8; 64],
     mso: [u8; 2560],
     mso_len: u16,
