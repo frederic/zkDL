@@ -32,13 +32,13 @@ export default function VerifymDL() {
         }
     }
     return (
-        <Card className="w-[350px]">
+        <Card>
             <CardHeader>
                 <CardTitle>Verify your mDL</CardTitle>
                 <CardDescription>Scan with zkDL Reader mobile app</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="flex flex-col">
+                <div className="flex justify-center">
                     <SVG
                         text={url}
                         options={{
@@ -50,8 +50,8 @@ export default function VerifymDL() {
                             },
                         }}
                     />
-                    {url}
                 </div>
+                {url}
             </CardContent>
             <CardFooter className="flex justify-between">
                 <Button onClick={refreshToken} variant="outline">Refresh</Button>

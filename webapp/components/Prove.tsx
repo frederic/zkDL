@@ -42,14 +42,14 @@ export default function ProveCard(props: ProveCardProps) {
         }
       };
       fetchProofStatus();
-    }, 2000);
+    }, 5000);
 
     // Cleanup on component unmount
     return () => clearInterval(intervalId);
   }, []);
 
   return (
-    <Card className="w-[350px]">
+    <Card>
       <CardHeader>
         <CardTitle>Proof processing</CardTitle>
         <CardDescription>Generating a ZK proof based your mDL data</CardDescription>

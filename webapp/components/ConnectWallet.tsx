@@ -8,7 +8,7 @@ import { useAccount } from "wagmi";
 export default function Home() {
     const { address, isConnected } = useAccount();
   return (
-    <Card className="w-[350px]">
+    <Card>
       <CardHeader>
         <CardTitle>Connect your wallet</CardTitle>
         <CardDescription>Use Ethereum Sepolia network</CardDescription>

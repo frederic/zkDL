@@ -14,7 +14,9 @@ export default async function Prove() {
     >
       <ConnectButton />
     </div>
-    <ProveCard proof_id={session.proof_id} />
+    <div className="max-w-md mx-auto my-8 w-[350px]">
+      <ProveCard proof_id={session.proof_id} />
     </div>
+  </div>
   );
 }

@@ -1,3 +1,4 @@
+import { setProofId } from '@/lib/redis';
 import { p256 } from '@noble/curves/p256';
 import axios from 'axios';
 const cbor = require('cbor')
@@ -62,5 +63,6 @@ export async function POST(request: Request, { params }: { params: { token: stri
       );
     const proofId = proveResponse.data.proof_id;
     console.log(proofId)
+    await setProofId(params.token, proofId);
     return new Response(null, { status: 200 });
 }
