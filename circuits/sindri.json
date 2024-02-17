@@ -1,0 +1,6 @@
+{
+  "$schema": "https://sindri.app/api/v1/sindri-manifest-schema.json",
+  "name": "zkDL",
+  "circuitType": "noir",
+  "provingScheme": "barretenberg"
+}

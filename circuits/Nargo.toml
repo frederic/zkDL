@@ -2,7 +2,7 @@
 name = "circuits"
 type = "bin"
 authors = [""]
-compiler_version = ">=0.22.0"
+compiler_version = "0.23.0"
 
 [dependencies]
 sha2 = { tag = "v0.0.3", git = "https://github.com/michaelelliot/noir-sha2", directory = "crates/noir-sha2" }
