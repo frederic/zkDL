@@ -4,8 +4,10 @@ import { useQRCode } from "next-qrcode";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 export default function VerifymDL() {
+    const router = useRouter();
     const [token, setToken] = useState("")
     useEffect(() => {
         const fetchToken = async () => {
@@ -26,7 +28,7 @@ export default function VerifymDL() {
     async function nextHandler() {
         const proofId = await getProofIdByToken(token);
         if (proofId) {
-
+            router.push("/prove");
         }
     }
     return (
