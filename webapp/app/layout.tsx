@@ -6,7 +6,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 import { cn } from "@/lib/utils"
 import { Providers } from "./providers";
  
-export const fontSans = FontSans({
+const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 })
