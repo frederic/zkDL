@@ -1,34 +1,64 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.24;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
-// Uncomment this line to use console.log
-// import "hardhat/console.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Votes.sol";
+import {UltraVerifier} from "./plonk_vk.sol";
 
-contract Lock {
-    uint public unlockTime;
-    address payable public owner;
+contract ZkDL is ERC721, Ownable, EIP712, ERC721Votes {
 
-    event Withdrawal(uint amount, uint when);
+    UltraVerifier verifier;
+    bytes32 pub_key_x;
+    bytes32 pub_key_y;
 
-    constructor(uint _unlockTime) payable {
-        require(
-            block.timestamp < _unlockTime,
-            "Unlock time should be in the future"
-        );
-
-        unlockTime = _unlockTime;
-        owner = payable(msg.sender);
+    constructor(address initialOwner, address _verifier, bytes32 _pub_key_x, bytes32 _pub_key_y)
+        ERC721("zkDL", "ZKDL")
+        Ownable(initialOwner)
+        EIP712("zkDL", "1")
+    {
+        verifier = UltraVerifier(_verifier);
+        pub_key_x = _pub_key_x;
+        pub_key_y = _pub_key_y;
     }
 
-    function withdraw() public {
-        // Uncomment this line, and the import of "hardhat/console.sol", to print a log in your terminal
-        // console.log("Unlock time is %o and block timestamp is %o", unlockTime, block.timestamp);
+    function _baseURI() internal pure override returns (string memory) {
+        return "https://zk-dl.vercel.app";
+    }
 
-        require(block.timestamp >= unlockTime, "You can't withdraw yet");
-        require(msg.sender == owner, "You aren't the owner");
+    function safeMint(bytes calldata proof, bytes32 nullifierHash, address to) external {
+        bytes32[] memory publicInputs = new bytes32[](96);
+        for (uint i = 0; i < 32; i++) {
+            publicInputs[i] = bytes32(uint256(uint8(pub_key_x[i])));
+            publicInputs[i + 32] = bytes32(uint256(uint8(pub_key_y[i])));
+            publicInputs[i + 64] = bytes32(uint256(uint8(nullifierHash[i])));
+        }
+        require(verifier.verify(proof, publicInputs), "Invalid proof");
+        address from = _ownerOf(uint256(nullifierHash));
+        if (from != address(0)) {
+            if (from != to) {
+                transferFrom(from, to, uint256(nullifierHash));
+            }
+        } else {
+            _safeMint(to, uint256(nullifierHash));
+        }
+    }
 
-        emit Withdrawal(address(this).balance, block.timestamp);
+    // The following functions are overrides required by Solidity.
 
-        owner.transfer(address(this).balance);
+    function _update(address to, uint256 tokenId, address auth)
+        internal
+        override(ERC721, ERC721Votes)
+        returns (address)
+    {
+        return super._update(to, tokenId, auth);
+    }
+
+    function _increaseBalance(address account, uint128 value)
+        internal
+        override(ERC721, ERC721Votes)
+    {
+        super._increaseBalance(account, value);
     }
 }
