@@ -155,7 +155,7 @@ private fun ToolboxScreen(
                 title = {
                     Text(
                         style = MaterialTheme.typography.headlineMedium,
-                        text = "zkDL",
+                        text = "zkDL Reader",
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -193,7 +193,7 @@ private fun Toolbox(
                 .padding(vertical = 20.dp)
                 .fillMaxWidth(),
             textAlign = TextAlign.Center,
-            text = "Options",
+            text = "Connect with mDL",
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSecondary
         )

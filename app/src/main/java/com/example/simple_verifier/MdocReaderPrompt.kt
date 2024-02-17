@@ -171,6 +171,13 @@ class MdocReaderPrompt(
             override fun onResponseReceived(deviceResponseBytes: ByteArray) {
                 Logger.d("Listener", "onResponseReceived")
                 responseBytes = deviceResponseBytes
+                val callbackUrl = mdocReaderSettings.getRequestCallback();
+                val deviceResponse = getDeviceResponse();
+                val documents: MutableList<DeviceResponseParser.Document>? = deviceResponse?.documents
+                val mdoc: DeviceResponseParser.Document? = documents?.get(0)
+                if(deviceResponse != null && mdoc != null) {
+                    makeApiCall(callbackUrl, deviceResponse.issuerSignedData, mdoc.getEncodedIssuerSignedData())
+                }
                 navController.navigate("Results")
             }
 
@@ -580,7 +587,7 @@ private fun ReaderScreen(
                 Text(
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    text = "Use QR Code",
+                    text = "Scan mDL QR Code",
                     modifier = Modifier
                         .padding(5.dp)
                 )
@@ -621,12 +628,9 @@ private fun ResultsScreen(
                 var resultDescription = "Couldn't retrieve document number!"
 
                 if (namespaces.contains("document_number")) {
-                    resultDescription = mdoc.getIssuerEntryString("org.iso.18013.5.1", "document_number")
+                    resultDescription = "Done";
                 } else if (!mdoc.issuerSignedAuthenticated or !mdoc.deviceSignedAuthenticated) {
                     resultDescription = "Couldn't authenticate response!"
-                }
-                if(deviceResponse != null) {
-                    makeApiCall(callbackUrl, deviceResponse.issuerSignedData, mdoc.getEncodedIssuerSignedData())
                 }
                 Text(
                     textAlign = TextAlign.Center,
