@@ -1,18 +1,5 @@
-import VerifymDL from "@/components/VerifymDL";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import ConnectWallet from "@/components/ConnectWallet";
 
 export default function Home() {
-  return (<div>
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-        padding: 12,
-      }}
-    >
-      <ConnectButton />
-    </div>
-    <VerifymDL />
-    </div>
-  );
+  return (<ConnectWallet />);
 }
