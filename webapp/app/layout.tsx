@@ -5,7 +5,10 @@ import '@rainbow-me/rainbowkit/styles.css';
 
 import { cn } from "@/lib/utils"
 import { Providers } from "./providers";
- 
+import Image from 'next/image'
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import Link from "next/link";
+
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -24,11 +27,27 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
-        )}>
-          <Providers>{children}</Providers>
-        </body>
+        "min-h-screen bg-background font-sans antialiased",
+        fontSans.variable
+      )}>
+        <Providers>
+          <header className="flex justify-between items-center h-16 p-4 bg-[#90c2c5]">
+            <h1 className="flex-1 text-2xl font-bold text-emerald-950"><Link href="/">zkDL</Link></h1>
+            <div className="flex-1 flex justify-center">
+              <Image
+                src="/zkDL-logo.png"
+                width={64}
+                height={64}
+                alt="zkDL-logo"
+              />
+            </div>
+            <div className="flex-1 flex justify-end text-right">
+              <ConnectButton />
+            </div>
+          </header>
+          {children}
+        </Providers>
+      </body>
     </html>
   );
 }
