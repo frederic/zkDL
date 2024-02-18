@@ -96,7 +96,7 @@ export default function MintCard(proof: ProofProps) {
         {mounted && isConnected && !isMinted && !alreadyMinted && (
           <span>Ready to mint, please proceed!</span>
         )}
-        {mounted && isConnected && alreadyMinted && (
+        {mounted && isConnected && !isMinted && alreadyMinted && (
           <span>You&apos;ve already minted your <Link href={getNftUrl(proof.nullifier)} target="_blank" className="underline">NFT!</Link></span>
         )}
         {mounted && isConnected && isMinted && (
