@@ -18,7 +18,7 @@ export default function VerifymDL() {
         fetchToken()
     }, [])
     const { SVG } = useQRCode();
-    const url = `http://${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/api/ble/${token}/`;
+    const url = `https://${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/api/ble/${token}/`;
 
     async function refreshToken() {
         const newToken = await refreshSessionToken();
@@ -34,8 +34,8 @@ export default function VerifymDL() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Verify your mDL</CardTitle>
-                <CardDescription>Scan with zkDL Reader mobile app</CardDescription>
+                <CardTitle>Connect with mDL</CardTitle>
+                <CardDescription>Scan QR with zkDL Reader mobile app</CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="flex justify-center">
@@ -51,7 +51,6 @@ export default function VerifymDL() {
                         }}
                     />
                 </div>
-                {url}
             </CardContent>
             <CardFooter className="flex justify-between">
                 <Button onClick={refreshToken} variant="outline">Refresh</Button>

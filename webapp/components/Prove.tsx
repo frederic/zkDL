@@ -46,13 +46,13 @@ export default function ProveCard(props: ProveCardProps) {
 
     // Cleanup on component unmount
     return () => clearInterval(intervalId);
-  }, []);
+  });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Proof processing</CardTitle>
-        <CardDescription>Generating a ZK proof based your mDL data</CardDescription>
+        <CardTitle>Proof generation</CardTitle>
+        <CardDescription>Processing in the cloud using sindri.app</CardDescription>
       </CardHeader>
       <CardContent className="flex justify-center">
         <div className="flex flex-col items-center">
