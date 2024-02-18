@@ -44,6 +44,7 @@ const config = getDefaultConfig({
     base,
     zora,
     hardhat,
+    sepolia,
     ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [sepolia] : []),
   ],
   ssr: true,
